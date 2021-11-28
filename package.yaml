@@ -23,6 +23,8 @@ dependencies:
 - base >= 4.7 && < 5
 - brick >= 0.62
 - text
+- lens
+- vty >= 5.33
 
 library:
   source-dirs: src

@@ -33,7 +33,9 @@ library
   build-depends:
       base >=4.7 && <5
     , brick >=0.62
+    , lens
     , text
+    , vty >=5.33
   default-language: Haskell2010
 
 executable BattleShip2-exe
@@ -45,7 +47,9 @@ executable BattleShip2-exe
       BattleShip2
     , base >=4.7 && <5
     , brick >=0.62
+    , lens
     , text
+    , vty >=5.33
   default-language: Haskell2010
 
 test-suite BattleShip2-test
@@ -60,5 +64,7 @@ test-suite BattleShip2-test
       BattleShip2
     , base >=4.7 && <5
     , brick >=0.62
+    , lens
     , text
+    , vty >=5.33
   default-language: Haskell2010
