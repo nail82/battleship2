@@ -54,14 +54,16 @@ renderBoard =
     in T.intercalate "\n" rows'
 
 
-borderBox :: Widget ()
-borderBox =
+borderBox :: T.Text -> Widget ()
+borderBox title =
     withBorderStyle BS.unicode $
-    B.borderWithLabel (str " Player 1 ") $
+    B.borderWithLabel (txt title) $
     txt $ renderBoard
 
 ui :: Widget ()
-ui = C.center $ hBox [borderBox]
+ui = C.center (borderBox " Player 1 Shots ")
+     <=> B.hBorder
+     <=> C.center (borderBox " Player 1 Ships ")
 
 main :: IO ()
 main = M.simpleMain ui
