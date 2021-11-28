@@ -2,7 +2,7 @@
 
 module Main where
 
---import qualified Graphics.Vty as V
+import qualified Data.Text as T
 import qualified Brick.Widgets.Border.Style as BS
 import qualified Brick.Main as M
 import qualified Brick.Widgets.Center as C
@@ -14,21 +14,30 @@ import Brick.Types
 
 import Brick.Widgets.Core
     (
-     vLimit
+     (<=>)
+    , hBox
+    , vLimit
     , withBorderStyle
     , str
     , txt
     )
 
+columnHeader :: T.Text
+columnHeader = T.concat ["   ", T.intersperse ' ' $ T.pack ['A'..'J']]
 
-ui :: Widget ()
-ui =
+rowHeader :: T.Text
+rowHeader =
+    let rows = fmap (T.pack . show) ([1..10] :: [Int])
+    in T.intercalate "\n" rows
+
+borderBox :: Widget ()
+borderBox =
     withBorderStyle BS.unicode $
     B.borderWithLabel (str " Player 1 ") $
-    vLimit 10 $
-    C.vCenter $
-    txt $ " Ship Board "
+    txt $ T.concat [columnHeader, "\n", rowHeader]
 
+ui :: Widget ()
+ui = C.center $ hBox [borderBox]
 
 main :: IO ()
 main = M.simpleMain ui
