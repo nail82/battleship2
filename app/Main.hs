@@ -2,6 +2,8 @@
 
 module Main where
 
+import Battle
+import UI
 import qualified Data.Text as T
 import qualified Brick.Widgets.Border.Style as BS
 import qualified Brick.Main as M
@@ -15,6 +17,7 @@ import Brick.Types
 import Brick.Widgets.Core
     (
      (<=>)
+    , (<+>)
     , hBox
     , withBorderStyle
     , str

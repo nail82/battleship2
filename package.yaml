@@ -25,6 +25,9 @@ dependencies:
 - text
 - lens
 - vty >= 5.33
+- linear
+- microlens
+- microlens-th
 
 library:
   source-dirs: src
