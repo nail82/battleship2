@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Battle
+      GameUtils
       UI
   other-modules:
       Paths_BattleShip2
