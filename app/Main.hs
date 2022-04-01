@@ -10,5 +10,5 @@ import UI
 
 main :: IO ()
 main = do
-  let game = gameInit
+  let game = fakeGame
   M.simpleMain $ UI.ui game

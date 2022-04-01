@@ -8,7 +8,7 @@ import qualified Data.List as L
 import qualified Data.Text as T
 import Battle
 
--- Ship Emplacement ------------------------------------------------------------
+-- Emplacement -----------------------------------------------------------------
 
 numHoles :: Design -> Int
 numHoles d =
@@ -93,7 +93,7 @@ shipEmplacement ships d h stern =
 
 
 
--- Shots -----------------------------------------------------------------------
+-- Fire  -----------------------------------------------------------------------
 
 checkShot :: Coord -> [Ship] -> Shot (Int, Int)
 checkShot c ships = undefined
@@ -121,11 +121,13 @@ fakeGame =
         d = emplace Destroyer West (6,4)
         s = emplace Sub South (7,9)
         p = emplace Pt North (9,1)
+        p1s = [Hit (1,2), Miss (2,2)]
+        p2s = [Miss (3,3), Hit (7,9)]
 
     in Game { _p1ships = [c,b,d,s,p]
             , _p2ships = [c,b,d,s,p]
-            , _p1shots = []
-            , _p2shots = []
+            , _p1shots = p1s
+            , _p2shots = p2s
             , _turn = P1
             , _mode = Fire
             }
