@@ -2,11 +2,12 @@
 
 module UI where
 
-import Battle
+import Lens.Micro
 import qualified Data.Text as T
 import qualified Brick.Widgets.Border.Style as BS
 import qualified Brick.Widgets.Center as C
 import qualified Brick.Widgets.Border as B
+import Battle
 
 import Brick.Types
     ( Widget
@@ -31,16 +32,23 @@ rowHeader =
     let rows = fmap (T.pack . show) ([1..10] :: [Int])
     in T.intercalate "\n" rows
 
-renderBoard :: T.Text
-renderBoard =
+
+boardMarker :: ([Shot (Int, Int)], [Ship]) -> Coord -> Char
+boardMarker (shots, ships) c = '_'
+             -- |
+             -- |
+             -- |
+             -- |
+             -- |
+             -- | otherwise = '_'
+
+renderBoard :: (Coord -> Char) -> T.Text
+renderBoard markerFn =
     let boardCoords =
             [(x,y) | x <- ([0..9] :: [Int]), y <- ([0..9] :: [Int])]
-        markers = T.pack $ fmap boardMarker boardCoords
+        markers = T.pack $ fmap markerFn boardCoords
         markers' = T.intersperse ' ' markers
         rows' = [columnHeader] <> markersToRows markers' [] 0
-
-        -- Just a constant for the time being
-        boardMarker _ = '_'
 
         -- |A recursive function to split the single row of markers
         -- |into a list of rows appending the row number to each row.
@@ -55,14 +63,31 @@ renderBoard =
 
     in T.intercalate "\n" rows'
 
+selectShots :: Board -> Game -> (Coord -> Char)
+-- Own shots, no ships
+selectShots ShotBoard game =
+    case game ^. turn of
+      P1 -> boardMarker (game ^. p1shots, [])
+      _ -> boardMarker (game ^. p2shots, [])
 
-borderBox :: T.Text -> Widget ()
-borderBox title =
+-- Other player shots and own ships
+selectShots ShipBoard game =
+    case game ^. turn of
+      P1 -> boardMarker (game ^. p2shots, game ^. p1ships)
+      _ -> boardMarker (game ^. p1shots, game ^. p2ships)
+
+borderBox :: (Coord -> Char) -> T.Text -> Widget ()
+borderBox markerFn title =
     withBorderStyle BS.unicode $
     B.borderWithLabel (txt title) $
-    txt $ renderBoard
+    txt $ renderBoard markerFn
 
-ui :: Widget ()
-ui = C.center (borderBox " Player 1 Shots ")
-     <=> B.hBorder
-     <=> C.center (borderBox " Player 1 Ships ")
+ui :: Game -> Widget ()
+ui game =
+    let player = T.pack $ show (game ^. turn)
+        shottitle = player <> "Shots "
+        shiptitle = player <> "Ships "
+
+    in C.center (borderBox (selectShots ShotBoard game) shottitle)
+           <=> B.hBorder
+           <=> C.center (borderBox (selectShots ShipBoard game) shiptitle)
