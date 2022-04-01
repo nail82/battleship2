@@ -1,7 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 module GameUtils where
 
 import Lens.Micro
+import Lens.Micro.TH (makeLenses)
 import qualified Data.List as L
 import qualified Data.Text as T
 import Battle
@@ -48,13 +50,13 @@ runFn h =
       East -> (+)
       _ -> (-)
 
--- Emplace a ship heading in a particular direction.
+-- Generate the coordinates of ship.
 -- I'm quite sure there is a cleaner linear algebra solution.
-emplace :: Heading
+shipCoords :: Heading
          -> Coord
          -> Int
          -> [Coord]
-emplace h stern nholes =
+shipCoords h stern nholes =
     let holes = replicate nholes stern
         (rsel,csel) = selectors h
         fn = runFn h
@@ -66,18 +68,24 @@ emplace h stern nholes =
         running_dim' = zipWith fn running_dim ys
     in zipper running_dim' const_dim
 
+emplace :: Design -> Heading -> Coord -> Ship
+emplace d h stern =
+    let nholes = numHoles d
+        holes = shipCoords h stern nholes
+    in Ship { _design = d
+            , _coords = holes
+            , _heading = h
+            , _shipstate = Afloat
+            }
+
 shipEmplacement :: [Ship] -> Design -> Heading -> Coord -> Either T.Text Ship
 shipEmplacement ships d h stern =
-    let nholes = numHoles d
-        holes = emplace h stern nholes
-        offboard = L.any offTheBoard holes
-        collision = L.any (isCollision holes) ships
+    let s = emplace d h stern
+        offboard = L.any offTheBoard (s ^. coords)
+        collision = L.any (isCollision $ s ^. coords) ships
     in case (offboard,collision) of
          (False, False) ->
-             Right Ship { _design = d
-                  , _coords = holes
-                  , _heading = h
-                  , _shipstate = Afloat}
+             Right s
          (True, _) ->
              Left "Emplacement is off the board"
          (_, True) ->
@@ -102,3 +110,25 @@ gameInit = Game {
            , _turn = P1
            , _mode = Emplacement
            }
+
+-- Fake Game init --------------------------------------------------------------
+
+fakeGame :: Game
+fakeGame =
+    -- Fake board to get to the actual game play
+    let c = emplace Carrier South (1,2)
+        b = emplace Battleship East (3,4)
+        d = emplace Destroyer West (6,4)
+        s = emplace Sub South (7,9)
+        p = emplace Pt North (9,1)
+
+    in Game { _p1ships = [c,b,d,s,p]
+            , _p2ships = [c,b,d,s,p]
+            , _p1shots = []
+            , _p2shots = []
+            , _turn = P1
+            , _mode = Fire
+            }
+
+-- Lenses --
+$(makeLenses ''Ship)
