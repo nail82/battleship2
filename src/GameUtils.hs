@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module GameUtils where
 
+import Lens.Micro
 import qualified Data.List as L
 import qualified Data.Text as T
 import Battle
@@ -21,8 +22,10 @@ offTheBoard (r,c)
             | (0 <= r && r < 10) && (0 <= c && c < 10) = False
             | otherwise = True
 
-isCollision :: [Coord] -> [Ship] -> Bool
-isCollision current other = False
+isCollision :: [Coord] -> Ship -> Bool
+isCollision current other =
+    let ocoords = other ^. coords
+    in L.any (`elem` ocoords) current
 
 selectors :: Heading -> (([Int],[Int]) -> [Int], ([Int],[Int]) -> [Int])
 selectors h =
@@ -45,6 +48,8 @@ runFn h =
       East -> (+)
       _ -> (-)
 
+-- Emplace a ship heading in a particular direction.
+-- I'm quite sure there is a cleaner linear algebra solution.
 emplace :: Heading
          -> Coord
          -> Int
@@ -61,16 +66,12 @@ emplace h stern nholes =
         running_dim' = zipWith fn running_dim ys
     in zipper running_dim' const_dim
 
--- Placing errors
--- place the same ship twice (will use the UI to avoid this error)
--- collision with the border
--- collision with another ship
-shipEmplacement :: Design -> Heading -> Coord -> Either T.Text Ship
-shipEmplacement d h stern =
+shipEmplacement :: [Ship] -> Design -> Heading -> Coord -> Either T.Text Ship
+shipEmplacement ships d h stern =
     let nholes = numHoles d
         holes = emplace h stern nholes
         offboard = L.any offTheBoard holes
-        collision = isCollision holes []
+        collision = L.any (isCollision holes) ships
     in case (offboard,collision) of
          (False, False) ->
              Right Ship { _design = d
@@ -82,9 +83,22 @@ shipEmplacement d h stern =
          (_, True) ->
              Left "Emplacement collides with another ship"
 
--- Game init --
 
--- Take shots --
 
---checkshot :: Ship -> Coord -> (Shot, Ship)
-checkShot = undefined
+-- Shots -----------------------------------------------------------------------
+
+checkShot :: Coord -> [Ship] -> Shot (Int, Int)
+checkShot c ships = undefined
+
+
+-- Game init -------------------------------------------------------------------
+
+gameInit :: Game
+gameInit = Game {
+             _p1ships = []
+           , _p2ships = []
+           , _p1shots = []
+           , _p2shots = []
+           , _turn = P1
+           , _mode = Emplacement
+           }
