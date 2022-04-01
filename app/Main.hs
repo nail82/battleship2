@@ -2,9 +2,13 @@
 
 module Main where
 
+import qualified Brick.Main as M
+import GameUtils
 import Battle
 import UI
-import qualified Brick.Main as M
+
 
 main :: IO ()
-main = M.simpleMain UI.ui
+main = do
+  let game = gameInit
+  M.simpleMain $ UI.ui game
