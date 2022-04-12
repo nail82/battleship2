@@ -1,0 +1,8 @@
+:set -XOverloadedStrings
+:set -XFlexibleContexts
+:set prompt "> "
+import Control.Monad
+import Control.Applicative
+import Lens.Micro
+import qualified Data.List as L
+import qualified Data.Text as T
